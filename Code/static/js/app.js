@@ -1,23 +1,26 @@
-getPlots();
+getPlots(940);
 
-function getPlots() {
+function getPlots(selectedId) {
     //Read samples.json
     console.log("infunction")
         d3.json("../Data/samples.json").then (sampledata =>{
+            var result = sampledata.metadata.filter(meta => meta.id == selectedId)[0];
+            var wfreq = result.wfreq
             console.log(sampledata)
-            var ids = sampledata.samples[0].otu_ids;
+            var sample = sampledata.samples.filter(d =>d.id == selectedId)
+            var ids = sample[0].otu_ids;
             console.log(ids)
-            var sampleValues =  sampledata.samples[0].sample_values.slice(0,10).reverse();
+            var sampleValues =  sample[0].sample_values.slice(0,10).reverse();
             console.log(sampleValues)
-            var labels =  sampledata.samples[0].otu_labels.slice(0,10);
+            var labels =  sample[0].otu_labels.slice(0,10);
             console.log (labels)
         // get only top 10 otu ids for the plot OTU and reversing it. 
-            var OTU_top = ( sampledata.samples[0].otu_ids.slice(0, 10)).reverse();
+            var OTU_top = ( sample[0].otu_ids.slice(0, 10)).reverse();
         // get the otu id's to the desired form for the plot
             var OTU_id = OTU_top.map(d => "OTU " + d);
             console.log(`OTU IDS: ${OTU_id}`)
          // get the top 10 labels for the plot
-            var labels =  sampledata.samples[0].otu_labels.slice(0,10);
+            var labels =  sample[0].otu_labels.slice(0,10);
             console.log(`OTU_labels: ${labels}`)
             var trace = {
                 x: sampleValues,
@@ -48,14 +51,14 @@ function getPlots() {
             Plotly.newPlot("bar", data, layout);
             // The bubble chart
             var trace1 = {
-                x: sampledata.samples[0].otu_ids,
-                y: sampledata.samples[0].sample_values,
+                x: sample[0].otu_ids,
+                y: sample[0].sample_values,
                 mode: "markers",
                 marker: {
-                    size: sampledata.samples[0].sample_values,
-                    color: sampledata.samples[0].otu_ids
+                    size: sample[0].sample_values,
+                    color: sample[0].otu_ids
                 },
-                text:  sampledata.samples[0].otu_labels
+                text:  sample[0].otu_labels
     
             };
     
@@ -63,7 +66,8 @@ function getPlots() {
             var layout_2 = {
                 xaxis:{title: "OTU ID"},
                 height: 600,
-                width: 1000
+                width: 1000,
+                color: OTU_id
             };
     
             // creating data variable 
@@ -72,8 +76,36 @@ function getPlots() {
         // create the bubble plot
         Plotly.newPlot("bubble", data1, layout_2); 
         
-        });
-    }  
+        
+    // The guage chart
+    
+        var data_g = [
+            {
+            domain: { x: [0, 1], y: [0, 1] },
+            value: parseFloat(wfreq),
+            title: { text: `Weekly Washing Frequency ` },
+            type: "indicator",
+            
+            mode: "gauge+number",
+            gauge: { axis: { range: [null, 9] },
+                    steps: [
+                    { range: [0, 2], color: "yellow" },
+                    { range: [2, 4], color: "cyan" },
+                    { range: [4, 6], color: "teal" },
+                    { range: [6, 8], color: "lime" },
+                    { range: [8, 9], color: "green" },
+                    ]}
+                
+            }];
+
+        var layout_g = { 
+            width: 700, 
+            height: 600, 
+            margin: { t: 20, b: 40, l:100, r:100 }, 
+            };
+        Plotly.newPlot("gauge", data_g, layout_g);
+    });
+}
     // create the function to get the necessary data
     function getDemoInfo(id) {
     // read the json file to get data
@@ -121,8 +153,7 @@ function getPlots() {
             getPlots(data.names[0]);
             getDemoInfo(data.names[0]);
         });
+
     }
-    
+
     init();
-
-
