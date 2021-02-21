@@ -1,25 +1,44 @@
 getPlots(940);
 
-function getPlots(selectedId) {
+function getPlots(subjectId) {
     //Read samples.json
     console.log("infunction")
-        d3.json("../Data/samples.json").then (sampledata =>{
-            var result = sampledata.metadata.filter(meta => meta.id == selectedId)[0];
+        d3.json("../Data/samples.json").then (subjectdata =>{
+            var result = subjectdata.metadata.filter(meta => meta.id == subjectId)[0];
             var wfreq = result.wfreq
-            console.log(sampledata)
-            var sample = sampledata.samples.filter(d =>d.id == selectedId)
+
+            // wfreqgauge = []
+            
+            // var sum = 0;
+
+            //     for (var i = 0; i < wfreq.length;i ++) {
+
+            //         var entry = [wfreq[i]]
+
+            //         wfreqgauge.push(wfreq[i])
+
+            //         sum= sum + wfreq[i]
+            //         console.log(i,wfreq[i])
+            //     }
+            //     wfreqgauge.push(sum)
+            //     wfreq.push (300)
+
+            // console.log(wfreqgauge, "wfreqgauge values")
+
+            console.log(subjectdata)
+            var sample = subjectdata.samples.filter(d =>d.id == subjectId)
             var ids = sample[0].otu_ids;
             console.log(ids)
             var sampleValues =  sample[0].sample_values.slice(0,10).reverse();
             console.log(sampleValues)
             var labels =  sample[0].otu_labels.slice(0,10);
             console.log (labels)
-        // get only top 10 otu ids for the plot OTU and reversing it. 
+
             var OTU_top = ( sample[0].otu_ids.slice(0, 10)).reverse();
-        // get the otu id's to the desired form for the plot
+
             var OTU_id = OTU_top.map(d => "OTU " + d);
             console.log(`OTU IDS: ${OTU_id}`)
-         // get the top 10 labels for the plot
+
             var labels =  sample[0].otu_labels.slice(0,10);
             console.log(`OTU_labels: ${labels}`)
             var trace = {
@@ -49,7 +68,8 @@ function getPlots(selectedId) {
             };
 
             Plotly.newPlot("bar", data, layout);
-            // The bubble chart
+            
+            // bubble
             var trace1 = {
                 x: sample[0].otu_ids,
                 y: sample[0].sample_values,
@@ -62,7 +82,7 @@ function getPlots(selectedId) {
     
             };
     
-            // set the layout for the bubble plot
+            // bubble layout
             var layout_2 = {
                 xaxis:{title: "OTU ID"},
                 height: 600,
@@ -70,88 +90,79 @@ function getPlots(selectedId) {
                 color: OTU_id
             };
     
-            // creating data variable 
             var data1 = [trace1];
     
-        // create the bubble plot
         Plotly.newPlot("bubble", data1, layout_2); 
+        })};
         
-        
-    // The guage chart
-    
-        var data_g = [
-            {
-            domain: { x: [0, 1], y: [0, 1] },
-            value: parseFloat(wfreq),
-            title: { text: `Weekly Washing Frequency ` },
-            type: "indicator",
-            
-            mode: "gauge+number",
-            gauge: { axis: { range: [null, 9] },
-                    steps: [
-                    { range: [0, 2], color: "yellow" },
-                    { range: [2, 4], color: "cyan" },
-                    { range: [4, 6], color: "teal" },
-                    { range: [6, 8], color: "lime" },
-                    { range: [8, 9], color: "green" },
-                    ]}
-                
-            }];
+            // gauge
+            function bonusPlot(wfreq) {
+                //Read samples.json
+                console.log("infunction")
+                    // d3.json("../Data/samples.json").then (subjectdata =>{
+                    //     var result = subjectdata.metadata.filter(meta => meta.id == subjectId)[0];
+                    //     var subject = result.wfreq
+            // var gaugeDiv = wfreq.subjectId("gauge");
 
-        var layout_g = { 
-            width: 700, 
-            height: 600, 
-            margin: { t: 20, b: 40, l:100, r:100 }, 
-            };
-        Plotly.newPlot("gauge", data_g, layout_g);
-    });
-}
-    // create the function to get the necessary data
-    function getDemoInfo(id) {
-    // read the json file to get data
-        d3.json("../Data/samples.json").then((data)=> {
-    // get the metadata info for the demographic panel
-            var metadata = data.metadata;
-    
-            console.log(metadata)
-    
-          // filter meta data info by id
-           var result = metadata.filter(meta => meta.id.toString() === id)[0];
-          // select demographic panel to put data
-           var demographicInfo = d3.select("#sample-metadata");
+            var traceA = {
+            domain: {x: [0-1], y: [0-1]},
+            value:  wfreq,
+            type:  "indicator",
+            mode:  "gauge",
+            gauge:  {axis: {range: [0,9]},
             
-         // empty the demographic info panel each time before getting new id info
-           demographicInfo.html("");
+            steps:  [{range: [0,2], color: "red"},
+            {range: [2,4], color: "orange"},
+            {range: [4,6], color: "yellow"},
+            {range: [6,8], color: "lightgreen"},
+            {range: [8,10], color: "aquagreen"}]
+        }, title: 'Number of Belly Button Washes Per Week'
+
+            };
+            
+            var data = [traceA];
+            
+            Plotly.plot("gauge", data);
     
-         // grab the necessary demographic data data for the id and append the info to the panel
+    };
+
+    function getDemoInfo(id) {
+
+        d3.json("../Data/samples.json").then((data)=> {
+            var metadata = data.metadata;
+            console.log(metadata)
+           var result = metadata.filter(meta => meta.id.toString() === id)[0];
+           var washingFreq=result.wfreq
+           var subjectInfo = d3.select("#sample-metadata");
+           subjectInfo.html("");
+    
             Object.entries(result).forEach((key) => {   
-                demographicInfo.append("h5").text(key[0].toUpperCase() + ": " + key[1] + "\n");    
+                subjectInfo.append("h5").text(key[0].toUpperCase() + ": " + key[1] + "\n");    
             });
+            bonusPlot(washingFreq)
+
         });
     }
-    // create the function for the change event
     function optionChanged(id) {
         getPlots(id);
         getDemoInfo(id);
     }
     
-    // create the function for the initial data rendering
     function init() {
-        // select dropdown menu 
+
         var dropdown = d3.select("#selDataset");
     
         // read the data 
         d3.json("../Data/samples.json").then((data)=> {
             console.log(data)
     
-            // get the id data to the dropdwown menu
             data.names.forEach(function(name) {
                 dropdown.append("option").text(name).property("value");
             });
     
-            // call the functions to display the data and the plots to the page
             getPlots(data.names[0]);
             getDemoInfo(data.names[0]);
+            optionChanged(data.names[0])
         });
 
     }
